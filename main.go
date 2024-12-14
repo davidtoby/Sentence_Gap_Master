@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -56,27 +57,30 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	articleStr := string(article)
 	// 分割文章为句子
 	sentences := splitSentences(articleStr)
-
+	qs := chooseWords(sentences)
 	// 将题库作为响应返回
-	fmt.Fprint(w, sentences)
-}
-func generateOptions(word string) []string {
-	// 生成选项
-	options := make([]string, 4)
-	options[0] = word
-	for i := 1; i < 4; i++ {
-		// 随机生成一个单词作为选项
-		options = generateRandomWord()
-	}
-	// 将选项打乱
-	rand.Shuffle(len(options), func(i, j int) {
-		options[i], options[j] = options[j], options[i]
-	})
-	return options
+	fmt.Fprint(w, qs)
 }
 
-func generateRandomWord() []string {
-	return []string{}
+// 生成干扰项（示例：拼写错误和词性相关）
+func generateDistractors(correctAnswer string) []string {
+	if len(correctAnswer) == 0 {
+		log.Println("Warning: Empty correctAnswer.")
+		return []string{} // Return an empty slice if correctAnswer is empty
+	}
+
+	var distractors []string
+
+	// 模拟拼写错误（简单替换字符）
+	distractors = append(distractors, correctAnswer[:len(correctAnswer)-1]+"z")
+
+	// 模拟相似词性错误（这里以一个简单的规则来生成错误词）
+	distractors = append(distractors, correctAnswer+"ed")
+
+	// 其他常见错误
+	distractors = append(distractors, correctAnswer+"ing")
+
+	return distractors
 }
 
 func chooseWords(sentences []string) []Question {
@@ -85,11 +89,11 @@ func chooseWords(sentences []string) []Question {
 		// 生成题目
 		prefix, subfix, word := chooseWord(sentence)
 		// 生成选项
-		options := generateOptions(word)
+		options := generateDistractors(word)
 		// 将题目和选项添加到题库中
 		question := Question{
 			ID:         i,
-			UserChoose: -1,
+			UserChoose: 0,
 			Prefix:     prefix,
 			Subfix:     subfix,
 			Options:    options,
@@ -103,6 +107,11 @@ func chooseWords(sentences []string) []Question {
 func chooseWord(sentence string) (prefix string, subfix string, word string) {
 	// 分割句子为单词
 	words := strings.Fields(sentence)
+	// 确保 words 切片不为空
+	if len(words) == 0 {
+		log.Println("Warning: Empty sentence.")
+		return "", "", ""
+	}
 	// 随机选择一个单词作为答案
 	wordIndex := rand.Intn(len(words))
 	word = words[wordIndex]
