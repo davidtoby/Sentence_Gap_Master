@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -58,8 +59,14 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	// 分割文章为句子
 	sentences := splitSentences(articleStr)
 	qs := chooseWords(sentences)
+	// 将题库转换为 JSON 格式
+	qsJSON, err := json.Marshal(qs)
+	if err != nil {
+		http.Error(w, "Failed to marshal JSON", http.StatusInternalServerError)
+		return
+	}
 	// 将题库作为响应返回
-	fmt.Fprint(w, qs)
+	fmt.Fprint(w, string(qsJSON))
 }
 
 // 生成干扰项（示例：拼写错误和词性相关）
