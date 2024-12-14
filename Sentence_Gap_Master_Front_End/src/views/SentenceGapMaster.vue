@@ -101,6 +101,7 @@ const chooseTitle = async (id) => {
     const { data } = await choose(id)
     console.log(data)
     questionList.value = data
+    step.value = 2
 }
 
 const submit = async () => {
