@@ -29,6 +29,31 @@ func splitSentences(text string) []string {
 	return sentences
 }
 
+func submit(w http.ResponseWriter, r *http.Request) {
+	// 解析请求体
+	var qs []Question
+	err := json.NewDecoder(r.Body).Decode(&qs)
+	if err != nil {
+		http.Error(w, "Failed to decode JSON", http.StatusBadRequest)
+		return
+	}
+	// 遍历每个题目，检查用户选择的选项是否正确
+	var correctAnswers int
+	for _, q := range qs {
+		if q.UserChoose == 0 {
+			continue
+		}
+		// 获取用户选择的选项
+		selectedOption := q.Options[q.UserChoose-1]
+		// 检查用户选择的选项是否正确
+		if selectedOption.Value == q.Subfix {
+			correctAnswers++
+		}
+	}
+	// 返回用户的成绩
+	fmt.Fprintf(w, "You got %d out of %d correct answers", correctAnswers, len(qs))
+}
+
 // 处理请求的函数
 func handleRequest(w http.ResponseWriter, r *http.Request) {
 	// 从请求中获取 ID 参数
@@ -94,16 +119,31 @@ func chooseWords(sentences []string) []Question {
 	var questions = make([]Question, 0)
 	for i, sentence := range sentences {
 		// 生成题目
+		if sentence == "" {
+			log.Println("Warning: Empty sentence.")
+			continue
+		}
 		prefix, subfix, word := chooseWord(sentence)
+		if word == "" {
+			log.Println("Warning: Empty word.")
+			continue
+		}
 		// 生成选项
 		options := generateDistractors(word)
+		var op []Option
+		for i, option := range options {
+			op = append(op, Option{
+				ID:    i + 1,
+				Value: option,
+			})
+		}
 		// 将题目和选项添加到题库中
 		question := Question{
 			ID:         i,
 			UserChoose: 0,
 			Prefix:     prefix,
 			Subfix:     subfix,
-			Options:    options,
+			Options:    op,
 		}
 		questions = append(questions, question)
 		// 将题目添加到题库中
@@ -139,7 +179,12 @@ type Question struct {
 	UserChoose int      `json:"user_choose"`
 	Prefix     string   `json:"prefix"`
 	Subfix     string   `json:"subfix"`
-	Options    []string `json:"options"`
+	Options    []Option `json:"options"`
+}
+
+type Option struct {
+	ID    int    `json:"optionId"`
+	Value string `json:"value"`
 }
 
 // 生成题库的函数
@@ -165,6 +210,7 @@ func getFileNameByID(id int) string {
 func main() {
 	// 设置路由和处理函数
 	http.HandleFunc("/choose", handleRequest)
+	http.HandleFunc("/submit", submit)
 
 	// 启动服务器
 	fmt.Println("Server is running on port 8080")
