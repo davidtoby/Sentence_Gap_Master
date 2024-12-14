@@ -3,7 +3,14 @@ import SentenceGapMaster from '@/views/SentenceGapMaster.vue'
 </script>
 
 <template>
-    <SentenceGapMaster />
+    <div class="master-style">
+        <SentenceGapMaster />
+    </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.master-style {
+    padding-left: 500px;
+    padding-right: 500px;
+}
+</style>
