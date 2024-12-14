@@ -1,15 +1,13 @@
 import axios from 'axios'
 
-const urlPrefix = 'http://localhost'
-
 export const choose = (id) => {
-    return axios.get(`${urlPrefix}/choose`, {
+    return axios.get(`/choose`, {
         params: {
             id,
         },
     })
 }
 
-export const submit = (msg) => {
-    return axios.post(`${urlPrefix}/submit`, msg)
+export const submitQuestion = (msg) => {
+    return axios.post(`/submit`, msg)
 }

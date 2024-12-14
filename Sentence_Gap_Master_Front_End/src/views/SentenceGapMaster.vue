@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from 'vue'
-import { choose } from '@/api/api.js'
+import { choose, submitQuestion } from '@/api/api.js'
 import { ElMessageBox } from 'element-plus'
 
-const step = ref(2)
+const step = ref(1)
 
 const titleList = ref([
     {
@@ -23,9 +23,9 @@ const titleList = ref([
 const questionList = ref([
     {
         questionId: 1,
-        userChoose: null,
+        user_choose: null,
         prefix: 'Apple',
-        suffix: 'red.',
+        subfix: 'red.',
         options: [
             {
                 optionId: 1,
@@ -47,9 +47,9 @@ const questionList = ref([
     },
     {
         questionId: 2,
-        userChoose: null,
+        user_choose: null,
         prefix: 'Orange',
-        suffix: 'yellow.',
+        subfix: 'yellow.',
         options: [
             {
                 optionId: 1,
@@ -71,9 +71,9 @@ const questionList = ref([
     },
     {
         questionId: 3,
-        userChoose: null,
+        user_choose: null,
         prefix: 'Blueberry',
-        suffix: 'blue.',
+        subfix: 'blue.',
         options: [
             {
                 optionId: 1,
@@ -101,6 +101,7 @@ const chooseTitle = async (id) => {
     const { data } = await choose(id)
     console.log(data)
     questionList.value = data
+    questionIndex.value = 0
     step.value = 2
 }
 
@@ -110,12 +111,12 @@ const submit = async () => {
         confirmButtonText: '是',
         cancelButtonText: '否',
     })
-    const { data } = await submit(questionList.value)
+    const { data } = await submitQuestion(questionList.value)
     step.value = 3
     console.log(data)
 }
 
-const gameResult = ref(false)
+const gameResult = ref(true)
 
 const getLetter = (index) => {
     if (index === 0) {
@@ -130,8 +131,8 @@ const getLetter = (index) => {
 }
 
 const getType = (id) => {
-    const { userChoose } = questionList.value[questionIndex.value]
-    if (userChoose === id) {
+    const { user_choose } = questionList.value[questionIndex.value]
+    if (user_choose === id) {
         return 'primary'
     } else {
         return ''
@@ -140,7 +141,7 @@ const getType = (id) => {
 
 const chooseOption = (item) => {
     const question = questionList.value[questionIndex.value]
-    question.userChoose = item.optionId
+    question.user_choose = item.optionId
 }
 </script>
 
@@ -157,7 +158,7 @@ const chooseOption = (item) => {
         <div class="question-box">
             <span>{{ questionList[questionIndex].prefix + ' ' }}</span>
             <span style="border-bottom: 1px solid black">&nbsp;</span>
-            <span>{{ ' ' + questionList[questionIndex].suffix }}</span>
+            <span>{{ ' ' + questionList[questionIndex].subfix }}</span>
             <span></span>
         </div>
         <el-divider />
