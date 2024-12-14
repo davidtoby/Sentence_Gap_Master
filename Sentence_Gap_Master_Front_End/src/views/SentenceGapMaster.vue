@@ -191,6 +191,9 @@ const chooseOption = (item) => {
     <div v-if="step === 3">
         <div v-if="gameResult">恭喜你！挑战成功！🎉</div>
         <div v-if="!gameResult">别放弃！你正在进步！🚀</div>
+        <div class="again-button">
+            <el-button type="primary" @click="step = 1">再来一次</el-button>
+        </div>
     </div>
 </template>
 
@@ -208,6 +211,10 @@ const chooseOption = (item) => {
 }
 
 .option-box {
+    margin-top: 10px;
+}
+
+.again-button {
     margin-top: 10px;
 }
 </style>
